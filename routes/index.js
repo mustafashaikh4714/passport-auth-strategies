@@ -1,47 +1,101 @@
-const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-const isAuthenticated = require('../config/auth')
-const passport = require('passport')
+const bcrypt = require('bcryptjs')
 
-module.exports = app => {
-  app.get('/', (req, res) => {
-    console.log('Welcome to the App!')
-  })
-
-  app.get('/register', (req, res) => {
-    res.render('/register')
-  })
-
-  app.post('/register', (req, res) => {
-    // register new user here.
-    // redirect to login after register successfully in order to manage session of individual user.
-  })
-
-  app.get('/login', (req, res) => {
-    res.render('/login')
-  })
-
-  app.post('/login', (req, res) => {
-    // login user.
-  })
-
-  // protected route
-  app.get('/edit/user/:id', isAuthenticated, (req, res) => {
-    User.findOne({ _id: req.params.id }).then(data => {
-      if (data.user != req.user.id) {
-        res.status(400).send('Not Authorized')
-        res.render('/user')
-      } else res.render('/edit/user', data)
+module.exports = (app, passport) => {
+  // REGISTER
+  app.post('/user/register', (req, res) => {
+    let { name, email, password } = req.body
+    let hashPassword = null
+    bcrypt.hash(password, 10).then((err, hash) => {
+      if (!err) hashPassword = hash
+    })
+    new User({ name, email, password: hashPassword }).save().then(user => {
+      if (!user)
+        return res.status(400).send({
+          success: false,
+          message: ' User not Registered'
+        })
+      else
+        return res.send({
+          success: true,
+          message: 'User Registered.'
+        })
     })
   })
 
-  app.put('/edit/user/:id', isAuthenticated, (req, res) => {
-    // update user
-    // send response.
-  })
+  // PROTECTED ROUTE
+  app.post(
+    '/user/profile',
+    passport.authenticate('jwt', { session: false }),
+    (req, res) => {
+      res.json(req.user)
+    }
+  )
 
-  app.get('/logout', (req, res) => {
-    req.logout()
-    res.redirect('/login')
+  //LOGIN
+  app.post('/user/login', (req, res) => {
+    // res.send('user login');
+    const { email, password } = req.body
+
+    User.findOne({ email })
+      .then(user => {
+        if (!user) {
+          return res.status(400).send({
+            success: false,
+            message: "user doesn't exists."
+          })
+        }
+        // compare password
+        bcrypt
+          .compare(password, user.password)
+          .then(isMatch => {
+            if (!isMatch) {
+              logger.error("Password doesn't match")
+              return res.status(400).send({
+                success: false,
+                message: "Password doesn't match"
+              })
+            } else
+              return res.send({
+                success: true,
+                message: 'Login Successfully'
+              })
+          })
+          .catch(error => console.log(error.message))
+      })
+      .catch(error => console.log(error.message))
+
+    // User.byUsername(username)
+    //   .then(user => {
+    //     if (!user) return res.json({ success: false, msg: 'User not found!' })
+    //     bcrypt
+    //       .compare(password, user.password)
+    //       .then(isMatch => {
+    //         if (isMatch) {
+    //           const token = jwt.sign(user.toJSON(), config.secret, {
+    //             expiresIn: 604800
+    //           })
+
+    //           return res.json({
+    //             success: true,
+    //             msg: 'Login successfuly!',
+    //             token: 'Bearer ' + token,
+    //             user: {
+    //               id: user._id,
+    //               name: user.name,
+    //               username: user.username,
+    //               email: user.email
+    //             }
+    //           })
+    //         } else return res.json({ success: false, msg: 'Password invalid!' })
+    //       })
+    //       .catch(err => {
+    //         console.log(err)
+    //       })
+    //   })
+    //   .catch(err => {
+    //     console.log(err)
+    //   })
   })
 }
