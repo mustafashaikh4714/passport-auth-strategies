@@ -33,6 +33,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 require('./config/database')
+require('./config/passport')(passport)
 require('./routes/index')(app)
 app.listen(PORT, () => console.log(`Server Started on port ${PORT}`))
 
