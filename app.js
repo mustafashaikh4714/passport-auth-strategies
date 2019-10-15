@@ -1,6 +1,7 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const passport = require('passport')
+import bodyParser from 'body-parser'
+import express from 'express'
+import passport from 'passport'
+import routes from './routes/index'
 
 const PORT = process.env.PORT || 3000
 const app = express()
@@ -18,8 +19,8 @@ app.use(passport.initialize())
 
 require('./config/database')
 require('./config/passport')(passport)
-require('./routes/index')(app, passport)
+routes(app, passport)
 
 app.listen(PORT, () => console.log(`Server Started on port ${PORT}`))
 
-module.exports = { app }
+// module.exports = { app }
