@@ -65,37 +65,5 @@ module.exports = (app, passport) => {
           .catch(error => console.log(error.message))
       })
       .catch(error => console.log(error.message))
-
-    // User.byUsername(username)
-    //   .then(user => {
-    //     if (!user) return res.json({ success: false, msg: 'User not found!' })
-    //     bcrypt
-    //       .compare(password, user.password)
-    //       .then(isMatch => {
-    //         if (isMatch) {
-    //           const token = jwt.sign(user.toJSON(), config.secret, {
-    //             expiresIn: 604800
-    //           })
-
-    //           return res.json({
-    //             success: true,
-    //             msg: 'Login successfuly!',
-    //             token: 'Bearer ' + token,
-    //             user: {
-    //               id: user._id,
-    //               name: user.name,
-    //               username: user.username,
-    //               email: user.email
-    //             }
-    //           })
-    //         } else return res.json({ success: false, msg: 'Password invalid!' })
-    //       })
-    //       .catch(err => {
-    //         console.log(err)
-    //       })
-    //   })
-    //   .catch(err => {
-    //     console.log(err)
-    //   })
   })
 }
